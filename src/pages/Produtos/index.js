@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import { withRouter } from "react-router-dom";
 
 import ProdutoService from "../../app/produtoService";
 const estadoInicial = {
@@ -8,9 +9,11 @@ const estadoInicial = {
 	preco: 0,
 	fornecedor: "",
 	sucesso: false,
+	errors: [],
+	atualizando: false,
 };
 
-export default class Cadastro extends Component {
+class Cadastro extends Component {
 	state = estadoInicial;
 
 	constructor() {
@@ -32,20 +35,36 @@ export default class Cadastro extends Component {
 			preco: this.state.preco,
 			fornecedor: this.state.fornecedor,
 		};
-
-		this.service.salvar(produto);
-		this.limpaCampos();
-		this.setState({ sucesso: true });
+		try {
+			this.service.salvar(produto);
+			this.limpaCampos();
+			this.setState({ sucesso: true });
+		} catch (erro) {
+			const errors = erro.errors;
+			this.setState({ errors: errors });
+		}
 	};
 
 	limpaCampos = () => {
 		this.setState(estadoInicial);
 	};
 
+	componentDidMount() {
+		const sku = this.props.match.params.sku;
+
+		if (sku) {
+			const resultado = this.service.obterProdutos().filter((produto) => produto.sku === sku);
+			if (resultado.length === 1) {
+				const produtoEncontrado = resultado[0];
+				this.setState({ ...produtoEncontrado, atualizando: true });
+			}
+		}
+	}
+
 	render() {
 		return (
 			<div className="card">
-				<div className="card-header">Cadastro de Produtos</div>
+				<div className="card-header">{this.state.atualizando ? "Atualização" : "Cadastro"} de Produtos</div>
 				<div className="card-body">
 					{this.state.sucesso && (
 						<div class="alert alert-dismissible alert-success">
@@ -55,6 +74,18 @@ export default class Cadastro extends Component {
 							<strong>Bem feito!</strong> Cadastro realizado com sucesso!
 						</div>
 					)}
+
+					{this.state.errors.length > 0 &&
+						this.state.errors.map((msg) => {
+							return (
+								<div className="alert alert-dismissible alert-danger">
+									<button type="button" className="close" data-dismiss="alert">
+										&times;
+									</button>
+									<strong>Erro!</strong> {msg}
+								</div>
+							);
+						})}
 
 					<div className="row">
 						<div className="col-md-6">
@@ -67,7 +98,7 @@ export default class Cadastro extends Component {
 						<div className="col-md-6">
 							<div className="form-group">
 								<label>SKU: *</label>
-								<input className="form-control" name="sku" type="text" value={this.state.sku} onChange={this.onChange} />
+								<input disabled={this.state.atualizando} className="form-control" name="sku" type="text" value={this.state.sku} onChange={this.onChange} />
 							</div>
 						</div>
 					</div>
@@ -99,7 +130,7 @@ export default class Cadastro extends Component {
 					<div className="row">
 						<div className="col-md-1">
 							<button className="btn btn-success" onClick={this.onSubmit} type="submit">
-								Salvar
+								{this.state.atualizando ? "Atualizar" : "Salvar"}
 							</button>
 						</div>
 						<div className="col-md-1">
@@ -113,3 +144,5 @@ export default class Cadastro extends Component {
 		);
 	}
 }
+
+export default withRouter(Cadastro);
