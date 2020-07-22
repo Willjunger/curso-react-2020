@@ -1,7 +1,8 @@
 import React, { Component } from "react";
 import { withRouter } from "react-router-dom";
-
+import Card from "../../components/Card";
 import ProdutoService from "../../app/produtoService";
+
 const estadoInicial = {
 	nome: "",
 	sku: "",
@@ -28,6 +29,7 @@ class Cadastro extends Component {
 	};
 
 	onSubmit = (event) => {
+		event.preventDefault();
 		const produto = {
 			nome: this.state.nome,
 			sku: this.state.sku,
@@ -63,12 +65,11 @@ class Cadastro extends Component {
 
 	render() {
 		return (
-			<div className="card">
-				<div className="card-header">{this.state.atualizando ? "Atualização" : "Cadastro"} de Produtos</div>
-				<div className="card-body">
+			<Card header={this.state.atualizando ? "Atualização de Produto" : "Cadastro de Produto"}>
+				<form id="frmProduto" onSubmit={this.onSubmit}>
 					{this.state.sucesso && (
-						<div class="alert alert-dismissible alert-success">
-							<button type="button" class="close" data-dismiss="alert">
+						<div className="alert alert-dismissible alert-success">
+							<button type="button" className="close" data-dismiss="alert">
 								&times;
 							</button>
 							<strong>Bem feito!</strong> Cadastro realizado com sucesso!
@@ -129,7 +130,7 @@ class Cadastro extends Component {
 
 					<div className="row">
 						<div className="col-md-1">
-							<button className="btn btn-success" onClick={this.onSubmit} type="submit">
+							<button className="btn btn-success" type="submit">
 								{this.state.atualizando ? "Atualizar" : "Salvar"}
 							</button>
 						</div>
@@ -139,8 +140,8 @@ class Cadastro extends Component {
 							</button>
 						</div>
 					</div>
-				</div>
-			</div>
+				</form>
+			</Card>
 		);
 	}
 }
